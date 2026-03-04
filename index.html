@@ -416,8 +416,6 @@
 
       <div class="chart-container">
         <div class="time-filters">
-          <button data-range="1d">1D</button>
-          <button data-range="1w">1W</button>
           <button data-range="1m" class="active">1M</button>
           <button data-range="3m">3M</button>
           <button data-range="6m">6M</button>
@@ -543,15 +541,6 @@
         let cutoff = new Date(now);
 
         switch (range) {
-          case "1d":
-            cutoff.setDate(cutoff.getDate() - 1);
-            break;
-          case "1w":
-            cutoff.setDate(cutoff.getDate() - 7);
-            break;
-          case "2w":
-            cutoff.setDate(cutoff.getDate() - 14);
-            break;
           case "1m":
             cutoff.setMonth(cutoff.getMonth() - 1);
             break;
@@ -591,15 +580,6 @@
                 const now = new Date(allData[allData.length - 1].navDate);
                 let c = new Date(now);
                 switch (range) {
-                  case "1d":
-                    c.setDate(c.getDate() - 1);
-                    break;
-                  case "1w":
-                    c.setDate(c.getDate() - 7);
-                    break;
-                  case "2w":
-                    c.setDate(c.getDate() - 14);
-                    break;
                   case "1m":
                     c.setMonth(c.getMonth() - 1);
                     break;
