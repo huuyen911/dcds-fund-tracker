@@ -1,645 +1,757 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="vi">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Theo Dõi Quỹ DCDS</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns@3.0.0/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body {
-            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
-            background: #0f1117;
-            color: #e1e4e8;
-            min-height: 100vh;
-        }
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      body {
+        font-family:
+          "Segoe UI",
+          system-ui,
+          -apple-system,
+          sans-serif;
+        background: #0f1117;
+        color: #e1e4e8;
+        min-height: 100vh;
+      }
+      .header {
+        background: #161b22;
+        border-bottom: 1px solid #30363d;
+        padding: 16px 24px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+      }
+      .header h1 {
+        font-size: 20px;
+        font-weight: 600;
+        color: #f0f6fc;
+      }
+      .header .subtitle {
+        font-size: 13px;
+        color: #8b949e;
+      }
+      .container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 20px;
+      }
+      .cards {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 12px;
+        margin-bottom: 20px;
+      }
+      .card {
+        background: #161b22;
+        border: 1px solid #30363d;
+        border-radius: 8px;
+        padding: 16px;
+      }
+      .card .label {
+        font-size: 12px;
+        color: #8b949e;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: 6px;
+      }
+      .card .value {
+        font-size: 22px;
+        font-weight: 700;
+        color: #f0f6fc;
+      }
+      .card .sub {
+        font-size: 12px;
+        color: #8b949e;
+        margin-top: 4px;
+      }
+      .card .value.green {
+        color: #3fb950;
+      }
+      .card .value.red {
+        color: #f85149;
+      }
+      .card .value.blue {
+        color: #58a6ff;
+      }
+      .card .value.orange {
+        color: #d29922;
+      }
+
+      .signal-box {
+        background: #161b22;
+        border: 1px solid #30363d;
+        border-radius: 8px;
+        padding: 20px;
+        margin-bottom: 20px;
+      }
+      .signal-box h3 {
+        font-size: 14px;
+        color: #8b949e;
+        margin-bottom: 12px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+      }
+      .signal-row {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        flex-wrap: wrap;
+      }
+      .signal-item {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+      .signal-item label {
+        font-size: 13px;
+        color: #8b949e;
+      }
+      .signal-item .val {
+        font-size: 15px;
+        font-weight: 600;
+      }
+      .input-group {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        background: #0d1117;
+        border: 1px solid #30363d;
+        border-radius: 6px;
+        padding: 4px 10px;
+      }
+      .input-group input {
+        background: transparent;
+        border: none;
+        color: #f0f6fc;
+        font-size: 15px;
+        font-weight: 600;
+        width: 120px;
+        outline: none;
+        text-align: right;
+      }
+      .input-group span {
+        font-size: 13px;
+        color: #8b949e;
+      }
+      .result-amount {
+        font-size: 20px;
+        font-weight: 700;
+        padding: 8px 16px;
+        border-radius: 6px;
+        display: inline-block;
+      }
+      .result-amount.buy-more {
+        background: #0d2818;
+        color: #3fb950;
+        border: 1px solid #238636;
+      }
+      .result-amount.buy-less {
+        background: #2d1b0e;
+        color: #d29922;
+        border: 1px solid #9e6a03;
+      }
+
+      .arrow {
+        font-size: 18px;
+        color: #484f58;
+      }
+
+      .chart-container {
+        background: #161b22;
+        border: 1px solid #30363d;
+        border-radius: 8px;
+        padding: 16px;
+      }
+      .chart-wrapper {
+        position: relative;
+        height: 450px;
+      }
+      .time-filters {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+        margin-bottom: 12px;
+      }
+      .time-filters button {
+        background: #21262d;
+        border: 1px solid #30363d;
+        color: #8b949e;
+        padding: 4px 12px;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 12px;
+      }
+      .time-filters button:hover {
+        background: #30363d;
+        color: #e1e4e8;
+      }
+      .time-filters button.active {
+        background: #1f6feb;
+        border-color: #1f6feb;
+        color: #fff;
+      }
+
+      /* ===== RESPONSIVE ===== */
+
+      /* Tablet */
+      @media (max-width: 768px) {
         .header {
-            background: #161b22;
-            border-bottom: 1px solid #30363d;
-            padding: 16px 24px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-        }
-        .header h1 {
-            font-size: 20px;
-            font-weight: 600;
-            color: #f0f6fc;
-        }
-        .header .subtitle {
-            font-size: 13px;
-            color: #8b949e;
+          flex-direction: column;
+          align-items: flex-start;
+          gap: 4px;
+          padding: 14px 16px;
         }
         .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 20px;
+          padding: 14px;
         }
         .cards {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 12px;
-            margin-bottom: 20px;
+          grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+          gap: 8px;
         }
         .card {
-            background: #161b22;
-            border: 1px solid #30363d;
-            border-radius: 8px;
-            padding: 16px;
-        }
-        .card .label {
-            font-size: 12px;
-            color: #8b949e;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            margin-bottom: 6px;
+          padding: 12px;
         }
         .card .value {
-            font-size: 22px;
-            font-weight: 700;
-            color: #f0f6fc;
+          font-size: 18px;
         }
-        .card .sub {
-            font-size: 12px;
-            color: #8b949e;
-            margin-top: 4px;
-        }
-        .card .value.green { color: #3fb950; }
-        .card .value.red { color: #f85149; }
-        .card .value.blue { color: #58a6ff; }
-        .card .value.orange { color: #d29922; }
-
         .signal-box {
-            background: #161b22;
-            border: 1px solid #30363d;
-            border-radius: 8px;
-            padding: 20px;
-            margin-bottom: 20px;
-        }
-        .signal-box h3 {
-            font-size: 14px;
-            color: #8b949e;
-            margin-bottom: 12px;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
+          padding: 14px;
         }
         .signal-row {
-            display: flex;
-            align-items: center;
-            gap: 16px;
-            flex-wrap: wrap;
-        }
-        .signal-item {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-        .signal-item label {
-            font-size: 13px;
-            color: #8b949e;
-        }
-        .signal-item .val {
-            font-size: 15px;
-            font-weight: 600;
-        }
-        .input-group {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            background: #0d1117;
-            border: 1px solid #30363d;
-            border-radius: 6px;
-            padding: 4px 10px;
-        }
-        .input-group input {
-            background: transparent;
-            border: none;
-            color: #f0f6fc;
-            font-size: 15px;
-            font-weight: 600;
-            width: 120px;
-            outline: none;
-            text-align: right;
-        }
-        .input-group span {
-            font-size: 13px;
-            color: #8b949e;
+          gap: 10px;
         }
         .result-amount {
-            font-size: 20px;
-            font-weight: 700;
-            padding: 8px 16px;
-            border-radius: 6px;
-            display: inline-block;
-        }
-        .result-amount.buy-more { background: #0d2818; color: #3fb950; border: 1px solid #238636; }
-        .result-amount.buy-less { background: #2d1b0e; color: #d29922; border: 1px solid #9e6a03; }
-
-        .arrow { font-size: 18px; color: #484f58; }
-
-        .chart-container {
-            background: #161b22;
-            border: 1px solid #30363d;
-            border-radius: 8px;
-            padding: 16px;
+          font-size: 16px;
+          padding: 6px 12px;
         }
         .chart-wrapper {
-            position: relative;
-            height: 450px;
+          height: 350px;
+        }
+        .chart-container {
+          padding: 12px;
+        }
+      }
+
+      /* Mobile */
+      @media (max-width: 480px) {
+        .header h1 {
+          font-size: 17px;
+        }
+        .header .subtitle {
+          font-size: 11px;
+        }
+        .container {
+          padding: 10px;
+        }
+        .cards {
+          grid-template-columns: repeat(2, 1fr);
+          gap: 6px;
+        }
+        .card {
+          padding: 10px;
+        }
+        .card .label {
+          font-size: 10px;
+          margin-bottom: 4px;
+        }
+        .card .value {
+          font-size: 15px;
+        }
+        .card .sub {
+          font-size: 10px;
+        }
+        .signal-box {
+          padding: 12px;
+        }
+        .signal-box h3 {
+          font-size: 12px;
+          margin-bottom: 10px;
+        }
+        .signal-row {
+          flex-direction: column;
+          align-items: flex-start;
+          gap: 8px;
+        }
+        .signal-item {
+          width: 100%;
+          justify-content: space-between;
+        }
+        .signal-item label {
+          font-size: 12px;
+        }
+        .arrow {
+          display: none;
+        }
+        .input-group {
+          flex: 1;
+          max-width: 180px;
+        }
+        .input-group input {
+          font-size: 14px;
+          width: 100px;
+        }
+        .result-amount {
+          font-size: 16px;
+          padding: 8px 12px;
+          width: 100%;
+          text-align: center;
+        }
+        .chart-container {
+          padding: 10px;
+        }
+        .chart-wrapper {
+          height: 280px;
         }
         .time-filters {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 6px;
-            margin-bottom: 12px;
+          gap: 4px;
+          flex-wrap: wrap;
         }
         .time-filters button {
-            background: #21262d;
-            border: 1px solid #30363d;
-            color: #8b949e;
-            padding: 4px 12px;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 12px;
+          padding: 6px 10px;
+          font-size: 11px;
+          flex: 1;
+          min-width: 40px;
+          text-align: center;
         }
-        .time-filters button:hover { background: #30363d; color: #e1e4e8; }
-        .time-filters button.active { background: #1f6feb; border-color: #1f6feb; color: #fff; }
+      }
 
-        /* ===== RESPONSIVE ===== */
-
-        /* Tablet */
-        @media (max-width: 768px) {
-            .header {
-                flex-direction: column;
-                align-items: flex-start;
-                gap: 4px;
-                padding: 14px 16px;
-            }
-            .container {
-                padding: 14px;
-            }
-            .cards {
-                grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-                gap: 8px;
-            }
-            .card {
-                padding: 12px;
-            }
-            .card .value {
-                font-size: 18px;
-            }
-            .signal-box {
-                padding: 14px;
-            }
-            .signal-row {
-                gap: 10px;
-            }
-            .result-amount {
-                font-size: 16px;
-                padding: 6px 12px;
-            }
-            .chart-wrapper {
-                height: 350px;
-            }
-            .chart-container {
-                padding: 12px;
-            }
+      /* Small mobile */
+      @media (max-width: 360px) {
+        .cards {
+          grid-template-columns: 1fr;
         }
-
-        /* Mobile */
-        @media (max-width: 480px) {
-            .header h1 {
-                font-size: 17px;
-            }
-            .header .subtitle {
-                font-size: 11px;
-            }
-            .container {
-                padding: 10px;
-            }
-            .cards {
-                grid-template-columns: repeat(2, 1fr);
-                gap: 6px;
-            }
-            .card {
-                padding: 10px;
-            }
-            .card .label {
-                font-size: 10px;
-                margin-bottom: 4px;
-            }
-            .card .value {
-                font-size: 15px;
-            }
-            .card .sub {
-                font-size: 10px;
-            }
-            .signal-box {
-                padding: 12px;
-            }
-            .signal-box h3 {
-                font-size: 12px;
-                margin-bottom: 10px;
-            }
-            .signal-row {
-                flex-direction: column;
-                align-items: flex-start;
-                gap: 8px;
-            }
-            .signal-item {
-                width: 100%;
-                justify-content: space-between;
-            }
-            .signal-item label {
-                font-size: 12px;
-            }
-            .arrow {
-                display: none;
-            }
-            .input-group {
-                flex: 1;
-                max-width: 180px;
-            }
-            .input-group input {
-                font-size: 14px;
-                width: 100px;
-            }
-            .result-amount {
-                font-size: 16px;
-                padding: 8px 12px;
-                width: 100%;
-                text-align: center;
-            }
-            .chart-container {
-                padding: 10px;
-            }
-            .chart-wrapper {
-                height: 280px;
-            }
-            .time-filters {
-                gap: 4px;
-                flex-wrap: wrap;
-            }
-            .time-filters button {
-                padding: 6px 10px;
-                font-size: 11px;
-                flex: 1;
-                min-width: 40px;
-                text-align: center;
-            }
+        .card {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          padding: 10px 12px;
         }
-
-        /* Small mobile */
-        @media (max-width: 360px) {
-            .cards {
-                grid-template-columns: 1fr;
-            }
-            .card {
-                display: flex;
-                align-items: center;
-                justify-content: space-between;
-                padding: 10px 12px;
-            }
-            .card .label {
-                margin-bottom: 0;
-            }
-            .card .value {
-                font-size: 16px;
-            }
-            .card .sub {
-                display: none;
-            }
+        .card .label {
+          margin-bottom: 0;
         }
+        .card .value {
+          font-size: 16px;
+        }
+        .card .sub {
+          display: none;
+        }
+      }
     </style>
-</head>
-<body>
+  </head>
+  <body>
     <div class="header">
-        <div>
-            <h1>Theo Dõi Quỹ DCDS</h1>
-            <div class="subtitle">Quỹ Đầu Tư Chứng Khoán Năng Động DC</div>
-        </div>
-        <div class="subtitle" id="lastUpdate"></div>
+      <div>
+        <h1>Theo Dõi Quỹ DCDS</h1>
+        <div class="subtitle">Quỹ Đầu Tư Chứng Khoán Năng Động DC</div>
+      </div>
+      <div class="subtitle" id="lastUpdate"></div>
     </div>
 
     <div class="container">
-        <div class="cards">
-            <div class="card">
-                <div class="label">NAV mới nhất</div>
-                <div class="value blue" id="navLatest">-</div>
-                <div class="sub" id="navDate">-</div>
-            </div>
-            <div class="card">
-                <div class="label">MA20</div>
-                <div class="value" id="ma20Value">-</div>
-                <div class="sub">Trung bình 20 phiên</div>
-            </div>
-            <div class="card">
-                <div class="label">NAV vs MA20</div>
-                <div class="value" id="navVsMa">-</div>
-                <div class="sub" id="navVsMaSub">-</div>
-            </div>
-            <div class="card">
-                <div class="label">Ratio (NAV/MA20)</div>
-                <div class="value" id="ratioValue">-</div>
-                <div class="sub" id="ratioSub">-</div>
-            </div>
-            <div class="card">
-                <div class="label">Hệ số nhân</div>
-                <div class="value orange" id="multiplierValue">-</div>
-                <div class="sub">tối thiểu 0.5x - tối đa 2.0x</div>
-            </div>
+      <div class="cards">
+        <div class="card">
+          <div class="label">NAV mới nhất</div>
+          <div class="value blue" id="navLatest">-</div>
+          <div class="sub" id="navDate">-</div>
         </div>
+        <div class="card">
+          <div class="label">MA20</div>
+          <div class="value" id="ma20Value">-</div>
+          <div class="sub">Trung bình 20 phiên</div>
+        </div>
+        <div class="card">
+          <div class="label">NAV vs MA20</div>
+          <div class="value" id="navVsMa">-</div>
+          <div class="sub" id="navVsMaSub">-</div>
+        </div>
+        <div class="card">
+          <div class="label">Ratio (NAV/MA20)</div>
+          <div class="value" id="ratioValue">-</div>
+          <div class="sub" id="ratioSub">-</div>
+        </div>
+        <div class="card">
+          <div class="label">Hệ số nhân</div>
+          <div class="value orange" id="multiplierValue">-</div>
+          <div class="sub">tối thiểu 0.5x - tối đa 2.0x</div>
+        </div>
+      </div>
 
-        <div class="signal-box">
-            <h3>Tính toán Value Averaging</h3>
-            <div class="signal-row">
-                <div class="signal-item">
-                    <label>Số tiền định kỳ:</label>
-                    <div class="input-group">
-                        <input type="number" id="investInput" value="1000000" step="500000" min="0">
-                        <span>VND</span>
-                    </div>
-                </div>
-                <div class="arrow">&rarr;</div>
-                <div class="signal-item">
-                    <label>Hệ số nhân:</label>
-                    <span class="val orange" id="multDisplay">-</span>
-                </div>
-                <div class="arrow">&rarr;</div>
-                <div class="signal-item">
-                    <label>Số tiền nên mua:</label>
-                    <div class="result-amount" id="buyAmount">-</div>
-                </div>
+      <div class="signal-box">
+        <h3>Tính toán Value Averaging</h3>
+        <div class="signal-row">
+          <div class="signal-item">
+            <label>Số tiền định kỳ:</label>
+            <div class="input-group">
+              <input
+                type="number"
+                id="investInput"
+                value="1000000"
+                step="500000"
+                min="0"
+              />
+              <span>VND</span>
             </div>
+          </div>
+          <div class="arrow">&rarr;</div>
+          <div class="signal-item">
+            <label>Hệ số nhân:</label>
+            <span class="val orange" id="multDisplay">-</span>
+          </div>
+          <div class="arrow">&rarr;</div>
+          <div class="signal-item">
+            <label>Số tiền nên mua:</label>
+            <div class="result-amount" id="buyAmount">-</div>
+          </div>
         </div>
+      </div>
 
-        <div class="chart-container">
-            <div class="time-filters">
-                <button data-range="1d">1D</button>
-                <button data-range="1w">1W</button>
-                <button data-range="1m">1M</button>
-                <button data-range="3m">3M</button>
-                <button data-range="6m">6M</button>
-                <button data-range="1y">1Y</button>
-                <button data-range="3y">3Y</button>
-                <button data-range="5y">5Y</button>
-                <button data-range="all" class="active">All</button>
-            </div>
-            <div class="chart-wrapper">
-                <canvas id="navChart"></canvas>
-            </div>
+      <div class="chart-container">
+        <div class="time-filters">
+          <button data-range="1d">1D</button>
+          <button data-range="1w">1W</button>
+          <button data-range="1m" class="active">1M</button>
+          <button data-range="3m">3M</button>
+          <button data-range="6m">6M</button>
+          <button data-range="1y">1Y</button>
+          <button data-range="3y">3Y</button>
+          <button data-range="5y">5Y</button>
+          <button data-range="all">All</button>
         </div>
+        <div class="chart-wrapper">
+          <canvas id="navChart"></canvas>
+        </div>
+      </div>
     </div>
 
     <script>
-        let chartInstance = null;
-        let allData = [];
-        let currentRange = 'all';
+      let chartInstance = null;
+      let allData = [];
+      let currentRange = "1m";
 
-        function formatNumber(n) {
-            return n.toLocaleString('vi-VN', { maximumFractionDigits: 2 });
+      function formatNumber(n) {
+        return n.toLocaleString("vi-VN", { maximumFractionDigits: 2 });
+      }
+
+      function formatDate(d) {
+        return new Intl.DateTimeFormat("vi-VN", {
+          day: "2-digit",
+          month: "2-digit",
+          year: "numeric",
+        }).format(new Date(d));
+      }
+
+      function parseInputNumber(s) {
+        return (
+          parseFloat(
+            s.replace(/[,.]/g, (match) => (match === "," ? "" : ".")),
+          ) || 0
+        );
+      }
+
+      function formatInputNumber(n) {
+        return Math.round(n).toLocaleString("vi-VN");
+      }
+
+      function calcMA(data, window) {
+        const result = [];
+        for (let i = 0; i < data.length; i++) {
+          if (i < window - 1) {
+            result.push(null);
+          } else {
+            let sum = 0;
+            for (let j = i - window + 1; j <= i; j++) sum += data[j].nav;
+            result.push(sum / window);
+          }
+        }
+        return result;
+      }
+
+      function updateInfo() {
+        if (allData.length === 0) return;
+
+        const latest = allData[allData.length - 1];
+        const ma20Values = calcMA(allData, 20);
+        const ma20 = ma20Values[ma20Values.length - 1];
+
+        document.getElementById("navLatest").textContent = formatNumber(
+          latest.nav,
+        );
+        document.getElementById("navDate").textContent = formatDate(
+          latest.navDate,
+        );
+        document.getElementById("ma20Value").textContent = formatNumber(ma20);
+
+        const diff = latest.nav - ma20;
+        const diffPct = (diff / ma20) * 100;
+        const navVsMaEl = document.getElementById("navVsMa");
+        const sign = diff >= 0 ? "+" : "";
+        navVsMaEl.textContent = `${sign}${formatNumber(diff)}`;
+        navVsMaEl.className = `value ${diff >= 0 ? "green" : "red"}`;
+        document.getElementById("navVsMaSub").textContent =
+          `${sign}${diffPct.toFixed(2)}% so với MA20`;
+
+        const ratio = latest.nav / ma20;
+        const ratioEl = document.getElementById("ratioValue");
+        ratioEl.textContent = ratio.toFixed(4);
+        ratioEl.className = `value ${ratio <= 1 ? "green" : "red"}`;
+        document.getElementById("ratioSub").textContent =
+          ratio <= 1 ? "NAV dưới MA20 (giá rẻ)" : "NAV trên MA20 (giá đắt)";
+
+        const multiplier = Math.max(0.5, Math.min(2.0, 2.0 - ratio));
+        document.getElementById("multiplierValue").textContent =
+          multiplier.toFixed(2) + "x";
+        document.getElementById("multDisplay").textContent =
+          multiplier.toFixed(2) + "x";
+
+        updateBuyAmount(multiplier);
+
+        document.getElementById("lastUpdate").textContent =
+          `Dữ liệu đến: ${formatDate(latest.navDate)}`;
+      }
+
+      function updateBuyAmount(multiplier) {
+        if (multiplier === undefined) {
+          const latest = allData[allData.length - 1];
+          const ma20Values = calcMA(allData, 20);
+          const ma20 = ma20Values[ma20Values.length - 1];
+          const ratio = latest.nav / ma20;
+          multiplier = Math.max(0.5, Math.min(2.0, 2.0 - ratio));
         }
 
-        function parseInputNumber(s) {
-            return parseFloat(s.replace(/[,.]/g, match => match === ',' ? '' : '.')) || 0;
+        const input =
+          parseFloat(document.getElementById("investInput").value) || 0;
+        const buyAmt = input * multiplier;
+
+        const buyEl = document.getElementById("buyAmount");
+        buyEl.textContent = formatInputNumber(buyAmt) + " VND";
+        buyEl.className = `result-amount ${multiplier >= 1 ? "buy-more" : "buy-less"}`;
+      }
+
+      function filterData(range) {
+        if (range === "all") return allData;
+
+        const now = new Date(allData[allData.length - 1].navDate);
+        let cutoff = new Date(now);
+
+        switch (range) {
+          case "1d":
+            cutoff.setDate(cutoff.getDate() - 1);
+            break;
+          case "1w":
+            cutoff.setDate(cutoff.getDate() - 7);
+            break;
+          case "2w":
+            cutoff.setDate(cutoff.getDate() - 14);
+            break;
+          case "1m":
+            cutoff.setMonth(cutoff.getMonth() - 1);
+            break;
+          case "3m":
+            cutoff.setMonth(cutoff.getMonth() - 3);
+            break;
+          case "6m":
+            cutoff.setMonth(cutoff.getMonth() - 6);
+            break;
+          case "1y":
+            cutoff.setFullYear(cutoff.getFullYear() - 1);
+            break;
+          case "3y":
+            cutoff.setFullYear(cutoff.getFullYear() - 3);
+            break;
+          case "5y":
+            cutoff.setFullYear(cutoff.getFullYear() - 5);
+            break;
         }
 
-        function formatInputNumber(n) {
-            return Math.round(n).toLocaleString('vi-VN');
-        }
+        const cutoffStr = cutoff.toISOString().slice(0, 10);
+        // Include 20 extra points before cutoff for MA20 calculation
+        let startIdx = allData.findIndex((d) => d.navDate >= cutoffStr);
+        startIdx = Math.max(0, startIdx - 20);
+        return allData.slice(startIdx);
+      }
 
-        function calcMA(data, window) {
-            const result = [];
-            for (let i = 0; i < data.length; i++) {
-                if (i < window - 1) {
-                    result.push(null);
-                } else {
-                    let sum = 0;
-                    for (let j = i - window + 1; j <= i; j++) sum += data[j].nav;
-                    result.push(sum / window);
-                }
-            }
-            return result;
-        }
+      function renderChart(range) {
+        currentRange = range;
+        const filtered = filterData(range);
+        const ma20 = calcMA(filtered, 20);
 
-        function updateInfo() {
-            if (allData.length === 0) return;
-
-            const latest = allData[allData.length - 1];
-            const ma20Values = calcMA(allData, 20);
-            const ma20 = ma20Values[ma20Values.length - 1];
-
-            document.getElementById('navLatest').textContent = formatNumber(latest.nav);
-            document.getElementById('navDate').textContent = latest.navDate;
-            document.getElementById('ma20Value').textContent = formatNumber(ma20);
-
-            const diff = latest.nav - ma20;
-            const diffPct = (diff / ma20) * 100;
-            const navVsMaEl = document.getElementById('navVsMa');
-            const sign = diff >= 0 ? '+' : '';
-            navVsMaEl.textContent = `${sign}${formatNumber(diff)}`;
-            navVsMaEl.className = `value ${diff >= 0 ? 'green' : 'red'}`;
-            document.getElementById('navVsMaSub').textContent = `${sign}${diffPct.toFixed(2)}% so với MA20`;
-
-            const ratio = latest.nav / ma20;
-            const ratioEl = document.getElementById('ratioValue');
-            ratioEl.textContent = ratio.toFixed(4);
-            ratioEl.className = `value ${ratio <= 1 ? 'green' : 'red'}`;
-            document.getElementById('ratioSub').textContent = ratio <= 1 ? 'NAV dưới MA20 (giá rẻ)' : 'NAV trên MA20 (giá đắt)';
-
-            const multiplier = Math.max(0.5, Math.min(2.0, 2.0 - ratio));
-            document.getElementById('multiplierValue').textContent = multiplier.toFixed(2) + 'x';
-            document.getElementById('multDisplay').textContent = multiplier.toFixed(2) + 'x';
-
-            updateBuyAmount(multiplier);
-
-            document.getElementById('lastUpdate').textContent = `Dữ liệu đến: ${latest.navDate}`;
-        }
-
-        function updateBuyAmount(multiplier) {
-            if (multiplier === undefined) {
-                const latest = allData[allData.length - 1];
-                const ma20Values = calcMA(allData, 20);
-                const ma20 = ma20Values[ma20Values.length - 1];
-                const ratio = latest.nav / ma20;
-                multiplier = Math.max(0.5, Math.min(2.0, 2.0 - ratio));
-            }
-
-            const input = parseFloat(document.getElementById('investInput').value) || 0;
-            const buyAmt = input * multiplier;
-
-            const buyEl = document.getElementById('buyAmount');
-            buyEl.textContent = formatInputNumber(buyAmt) + ' VND';
-            buyEl.className = `result-amount ${multiplier >= 1 ? 'buy-more' : 'buy-less'}`;
-        }
-
-        function filterData(range) {
-            if (range === 'all') return allData;
-
-            const now = new Date(allData[allData.length - 1].navDate);
-            let cutoff = new Date(now);
-
-            switch (range) {
-                case '1d': cutoff.setDate(cutoff.getDate() - 1); break;
-                case '1w': cutoff.setDate(cutoff.getDate() - 7); break;
-                case '2w': cutoff.setDate(cutoff.getDate() - 14); break;
-                case '1m': cutoff.setMonth(cutoff.getMonth() - 1); break;
-                case '3m': cutoff.setMonth(cutoff.getMonth() - 3); break;
-                case '6m': cutoff.setMonth(cutoff.getMonth() - 6); break;
-                case '1y': cutoff.setFullYear(cutoff.getFullYear() - 1); break;
-                case '3y': cutoff.setFullYear(cutoff.getFullYear() - 3); break;
-                case '5y': cutoff.setFullYear(cutoff.getFullYear() - 5); break;
-            }
-
-            const cutoffStr = cutoff.toISOString().slice(0, 10);
-            // Include 20 extra points before cutoff for MA20 calculation
-            let startIdx = allData.findIndex(d => d.navDate >= cutoffStr);
-            startIdx = Math.max(0, startIdx - 20);
-            return allData.slice(startIdx);
-        }
-
-        function renderChart(range) {
-            currentRange = range;
-            const filtered = filterData(range);
-            const ma20 = calcMA(filtered, 20);
-
-            const cutoffDate = range === 'all' ? null : (() => {
+        const cutoffDate =
+          range === "all"
+            ? null
+            : (() => {
                 const now = new Date(allData[allData.length - 1].navDate);
                 let c = new Date(now);
                 switch (range) {
-                    case '1d': c.setDate(c.getDate() - 1); break;
-                    case '1w': c.setDate(c.getDate() - 7); break;
-                    case '2w': c.setDate(c.getDate() - 14); break;
-                    case '1m': c.setMonth(c.getMonth() - 1); break;
-                    case '3m': c.setMonth(c.getMonth() - 3); break;
-                    case '6m': c.setMonth(c.getMonth() - 6); break;
-                    case '1y': c.setFullYear(c.getFullYear() - 1); break;
-                    case '3y': c.setFullYear(c.getFullYear() - 3); break;
-                    case '5y': c.setFullYear(c.getFullYear() - 5); break;
+                  case "1d":
+                    c.setDate(c.getDate() - 1);
+                    break;
+                  case "1w":
+                    c.setDate(c.getDate() - 7);
+                    break;
+                  case "2w":
+                    c.setDate(c.getDate() - 14);
+                    break;
+                  case "1m":
+                    c.setMonth(c.getMonth() - 1);
+                    break;
+                  case "3m":
+                    c.setMonth(c.getMonth() - 3);
+                    break;
+                  case "6m":
+                    c.setMonth(c.getMonth() - 6);
+                    break;
+                  case "1y":
+                    c.setFullYear(c.getFullYear() - 1);
+                    break;
+                  case "3y":
+                    c.setFullYear(c.getFullYear() - 3);
+                    break;
+                  case "5y":
+                    c.setFullYear(c.getFullYear() - 5);
+                    break;
                 }
                 return c.toISOString().slice(0, 10);
-            })();
+              })();
 
-            const displayData = cutoffDate
-                ? filtered.filter(d => d.navDate >= cutoffDate)
-                : filtered;
-            const displayMA = cutoffDate
-                ? ma20.slice(filtered.length - displayData.length)
-                : ma20;
+        const displayData = cutoffDate
+          ? filtered.filter((d) => d.navDate >= cutoffDate)
+          : filtered;
+        const displayMA = cutoffDate
+          ? ma20.slice(filtered.length - displayData.length)
+          : ma20;
 
-            const labels = displayData.map(d => d.navDate);
-            const navData = displayData.map(d => d.nav);
+        const labels = displayData.map((d) => d.navDate);
+        const navData = displayData.map((d) => d.nav);
 
-            if (chartInstance) chartInstance.destroy();
+        if (chartInstance) chartInstance.destroy();
 
-            const ctx = document.getElementById('navChart').getContext('2d');
-            chartInstance = new Chart(ctx, {
-                type: 'line',
-                data: {
-                    labels,
-                    datasets: [
-                        {
-                            label: 'NAV',
-                            data: navData,
-                            borderColor: '#58a6ff',
-                            backgroundColor: 'rgba(88, 166, 255, 0.05)',
-                            borderWidth: 1.5,
-                            pointRadius: 0,
-                            pointHitRadius: 10,
-                            fill: true,
-                            tension: 0.1,
-                        },
-                        {
-                            label: 'MA20',
-                            data: displayMA,
-                            borderColor: '#d29922',
-                            borderWidth: 1.2,
-                            borderDash: [4, 3],
-                            pointRadius: 0,
-                            pointHitRadius: 10,
-                            fill: false,
-                            tension: 0.1,
-                        }
-                    ]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    interaction: {
-                        mode: 'index',
-                        intersect: false,
-                    },
-                    plugins: {
-                        legend: {
-                            labels: { color: '#8b949e', font: { size: 12 } }
-                        },
-                        tooltip: {
-                            backgroundColor: '#1c2128',
-                            borderColor: '#30363d',
-                            borderWidth: 1,
-                            titleColor: '#e1e4e8',
-                            bodyColor: '#e1e4e8',
-                            callbacks: {
-                                label: ctx => `${ctx.dataset.label}: ${formatNumber(ctx.parsed.y)} VND`
-                            }
-                        }
-                    },
-                    scales: {
-                        x: {
-                            type: 'time',
-                            time: {
-                                parser: 'yyyy-MM-dd',
-                                tooltipFormat: 'dd/MM/yyyy',
-                                displayFormats: {
-                                    month: 'MM/yyyy',
-                                    year: 'yyyy'
-                                }
-                            },
-                            ticks: { color: '#484f58', maxTicksLimit: 12 },
-                            grid: { color: '#21262d' }
-                        },
-                        y: {
-                            ticks: {
-                                color: '#484f58',
-                                callback: v => (v / 1000).toFixed(0) + 'k'
-                            },
-                            grid: { color: '#21262d' }
-                        }
-                    }
-                }
-            });
-        }
-
-        // Input handling
-        document.getElementById('investInput').addEventListener('input', function () {
-            updateBuyAmount();
-        });
-
-        // Time filter buttons
-        document.querySelectorAll('.time-filters button').forEach(btn => {
-            btn.addEventListener('click', function () {
-                document.querySelectorAll('.time-filters button').forEach(b => b.classList.remove('active'));
-                this.classList.add('active');
-                renderChart(this.dataset.range);
-            });
-        });
-
-        // Load data from fmarket API
-        fetch('https://api.fmarket.vn/res/product/get-nav-history', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Accept': 'application/json',
+        const ctx = document.getElementById("navChart").getContext("2d");
+        chartInstance = new Chart(ctx, {
+          type: "line",
+          data: {
+            labels,
+            datasets: [
+              {
+                label: "NAV",
+                data: navData,
+                borderColor: "#58a6ff",
+                backgroundColor: "rgba(88, 166, 255, 0.05)",
+                borderWidth: 1.5,
+                pointRadius: 0,
+                pointHitRadius: 10,
+                fill: true,
+                tension: 0.1,
+              },
+              {
+                label: "MA20",
+                data: displayMA,
+                borderColor: "#d29922",
+                borderWidth: 1.2,
+                borderDash: [4, 3],
+                pointRadius: 0,
+                pointHitRadius: 10,
+                fill: false,
+                tension: 0.1,
+              },
+            ],
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            interaction: {
+              mode: "index",
+              intersect: false,
             },
-            body: JSON.stringify({ isAllData: 1, productId: 28, navPeriod: 'navToBeginning' })
-        })
-            .then(r => r.json())
-            .then(res => {
-                allData = (res.data || []).sort((a, b) => a.navDate.localeCompare(b.navDate));
-                updateInfo();
-                renderChart('all');
-            });
+            plugins: {
+              legend: {
+                labels: { color: "#8b949e", font: { size: 12 } },
+              },
+              tooltip: {
+                backgroundColor: "#1c2128",
+                borderColor: "#30363d",
+                borderWidth: 1,
+                titleColor: "#e1e4e8",
+                bodyColor: "#e1e4e8",
+                callbacks: {
+                  label: (ctx) =>
+                    `${ctx.dataset.label}: ${formatNumber(ctx.parsed.y)} VND`,
+                },
+              },
+            },
+            scales: {
+              x: {
+                type: "time",
+                time: {
+                  parser: "yyyy-MM-dd",
+                  tooltipFormat: "dd/MM/yyyy",
+                  displayFormats: {
+                    month: "MM/yyyy",
+                    year: "yyyy",
+                  },
+                },
+                ticks: { color: "#484f58", maxTicksLimit: 12 },
+                grid: { color: "#21262d" },
+              },
+              y: {
+                ticks: {
+                  color: "#484f58",
+                  callback: (v) => (v / 1000).toFixed(0) + "k",
+                },
+                grid: { color: "#21262d" },
+              },
+            },
+          },
+        });
+      }
+
+      // Input handling
+      document
+        .getElementById("investInput")
+        .addEventListener("input", function () {
+          updateBuyAmount();
+        });
+
+      // Time filter buttons
+      document.querySelectorAll(".time-filters button").forEach((btn) => {
+        btn.addEventListener("click", function () {
+          document
+            .querySelectorAll(".time-filters button")
+            .forEach((b) => b.classList.remove("active"));
+          this.classList.add("active");
+          renderChart(this.dataset.range);
+        });
+      });
+
+      // Load data from fmarket API
+      fetch("https://api.fmarket.vn/res/product/get-nav-history", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+        },
+        body: JSON.stringify({
+          isAllData: 1,
+          productId: 28,
+          navPeriod: "navToBeginning",
+        }),
+      })
+        .then((r) => r.json())
+        .then((res) => {
+          allData = (res.data || []).sort((a, b) =>
+            a.navDate.localeCompare(b.navDate),
+          );
+          updateInfo();
+          renderChart("1m");
+        });
     </script>
-</body>
+  </body>
 </html>
