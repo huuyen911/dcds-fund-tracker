@@ -1,0 +1,190 @@
+<!doctype html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Mô Phỏng DCA - Phân Tích Chứng Chỉ Quỹ</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns@3.0.0/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
+  </head>
+  <body class="bg-gray-950 text-gray-200 min-h-screen font-sans">
+    <!-- Header -->
+    <header class="bg-gray-900 border-b border-gray-800">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6">
+        <div class="flex items-center justify-between h-14">
+          <a href="index.html" class="flex items-center gap-2.5 group">
+            <div class="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
+              <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M3 3h7v7H3zM14 3h7v7h-7zM3 14h7v7H3zM14 14h7v7h-7z"/>
+              </svg>
+            </div>
+            <span class="text-white font-bold text-lg hidden sm:block group-hover:text-blue-400 transition-colors">FundTracker</span>
+          </a>
+          <nav class="flex items-center gap-1">
+            <a href="index.html" class="px-3 py-1.5 text-sm font-medium rounded-lg text-gray-400 hover:text-white hover:bg-gray-800/50 transition-colors">Danh sách</a>
+            <a href="compare.html" class="px-3 py-1.5 text-sm font-medium rounded-lg text-gray-400 hover:text-white hover:bg-gray-800/50 transition-colors">So sánh</a>
+            <a href="dca.html" class="px-3 py-1.5 text-sm font-medium rounded-lg bg-gray-800 text-white">DCA</a>
+          </nav>
+        </div>
+      </div>
+    </header>
+
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 py-6">
+      <!-- Fund Selector + Params -->
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-6">
+        <!-- Fund Search -->
+        <div class="bg-gray-900 border border-gray-800 rounded-xl p-4">
+          <h3 class="text-xs text-gray-500 uppercase tracking-wider mb-3">Chọn quỹ</h3>
+          <div class="relative">
+            <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+            </svg>
+            <input
+              id="fundSearch"
+              type="text"
+              placeholder="Tìm quỹ..."
+              class="w-full bg-gray-950 border border-gray-700 rounded-lg py-2.5 pl-10 pr-4 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-blue-500 transition-colors"
+              autocomplete="off"
+            />
+            <div id="searchResults" class="absolute z-10 w-full mt-1 bg-gray-900 border border-gray-700 rounded-lg shadow-xl max-h-60 overflow-y-auto hidden"></div>
+          </div>
+          <div id="selectedFund" class="mt-3"></div>
+        </div>
+
+        <!-- DCA Parameters -->
+        <div class="bg-gray-900 border border-gray-800 rounded-xl p-4">
+          <h3 class="text-xs text-gray-500 uppercase tracking-wider mb-3">Thông số DCA</h3>
+          <div class="space-y-3">
+            <div>
+              <label class="text-xs text-gray-400 mb-1 block">Số tiền mỗi kỳ</label>
+              <div class="flex items-center bg-gray-950 border border-gray-700 rounded-lg px-3 py-2">
+                <input id="dcaAmount" type="number" value="1000000" step="500000" min="100000"
+                  class="bg-transparent border-none text-white text-sm font-semibold w-full text-right focus:outline-none" />
+                <span class="text-xs text-gray-500 ml-2">VND</span>
+              </div>
+            </div>
+            <div>
+              <label class="text-xs text-gray-400 mb-1 block">Tần suất</label>
+              <select id="dcaFrequency" class="w-full bg-gray-950 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-blue-500 cursor-pointer">
+                <option value="monthly">Hàng tháng</option>
+                <option value="biweekly">2 tuần/lần</option>
+                <option value="weekly">Hàng tuần</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- Time Range -->
+        <div class="bg-gray-900 border border-gray-800 rounded-xl p-4">
+          <h3 class="text-xs text-gray-500 uppercase tracking-wider mb-3">Thời gian</h3>
+          <div class="space-y-3">
+            <div>
+              <label class="text-xs text-gray-400 mb-1 block">Ngày bắt đầu</label>
+              <input id="dcaStart" type="date"
+                class="w-full bg-gray-950 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-blue-500" />
+            </div>
+            <div>
+              <label class="text-xs text-gray-400 mb-1 block">Ngày kết thúc</label>
+              <input id="dcaEnd" type="date"
+                class="w-full bg-gray-950 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-blue-500" />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Run Button -->
+      <div class="mb-6">
+        <button id="runBtn" disabled
+          class="w-full sm:w-auto px-6 py-2.5 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-700 disabled:text-gray-500 text-white text-sm font-semibold rounded-lg transition-colors">
+          Chạy mô phỏng
+        </button>
+      </div>
+
+      <!-- Loading -->
+      <div id="loader" class="hidden flex items-center justify-center py-12">
+        <div class="flex items-center gap-3">
+          <svg class="animate-spin h-5 w-5 text-blue-500" viewBox="0 0 24 24">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" fill="none"/>
+            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
+          </svg>
+          <span class="text-gray-400">Đang tính toán...</span>
+        </div>
+      </div>
+
+      <!-- Results -->
+      <div id="results" class="hidden">
+        <!-- Summary Cards -->
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
+          <div class="bg-gray-900 border border-gray-800 rounded-xl p-4">
+            <div class="text-xs text-gray-500 uppercase tracking-wider mb-1">Tổng đầu tư</div>
+            <div id="totalInvested" class="text-sm font-semibold text-white">-</div>
+          </div>
+          <div class="bg-gray-900 border border-gray-800 rounded-xl p-4">
+            <div class="text-xs text-gray-500 uppercase tracking-wider mb-1">Giá trị hiện tại</div>
+            <div id="currentValue" class="text-sm font-semibold text-white">-</div>
+          </div>
+          <div class="bg-gray-900 border border-gray-800 rounded-xl p-4">
+            <div class="text-xs text-gray-500 uppercase tracking-wider mb-1">Lợi nhuận</div>
+            <div id="profit" class="text-sm font-semibold">-</div>
+          </div>
+          <div class="bg-gray-900 border border-gray-800 rounded-xl p-4">
+            <div class="text-xs text-gray-500 uppercase tracking-wider mb-1">Tỷ suất lợi nhuận</div>
+            <div id="returnPct" class="text-sm font-semibold">-</div>
+          </div>
+        </div>
+
+        <!-- Additional Info -->
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
+          <div class="bg-gray-900 border border-gray-800 rounded-xl p-4">
+            <div class="text-xs text-gray-500 uppercase tracking-wider mb-1">Số lần mua</div>
+            <div id="buyCount" class="text-sm font-semibold text-white">-</div>
+          </div>
+          <div class="bg-gray-900 border border-gray-800 rounded-xl p-4">
+            <div class="text-xs text-gray-500 uppercase tracking-wider mb-1">NAV trung bình</div>
+            <div id="avgNav" class="text-sm font-semibold text-white">-</div>
+          </div>
+          <div class="bg-gray-900 border border-gray-800 rounded-xl p-4">
+            <div class="text-xs text-gray-500 uppercase tracking-wider mb-1">Tổng CCQ</div>
+            <div id="totalUnits" class="text-sm font-semibold text-white">-</div>
+          </div>
+          <div class="bg-gray-900 border border-gray-800 rounded-xl p-4">
+            <div class="text-xs text-gray-500 uppercase tracking-wider mb-1">NAV hiện tại</div>
+            <div id="latestNav" class="text-sm font-semibold text-white">-</div>
+          </div>
+        </div>
+
+        <!-- Chart -->
+        <div class="bg-gray-900 border border-gray-800 rounded-xl p-4 mb-6">
+          <h3 class="text-xs text-gray-500 uppercase tracking-wider mb-4">Biểu đồ tăng trưởng</h3>
+          <div class="relative h-[350px] sm:h-[450px]">
+            <canvas id="dcaChart"></canvas>
+          </div>
+        </div>
+
+        <!-- Transaction History -->
+        <div class="bg-gray-900 border border-gray-800 rounded-xl p-4">
+          <h3 class="text-xs text-gray-500 uppercase tracking-wider mb-3">Lịch sử giao dịch</h3>
+          <div class="overflow-x-auto max-h-[400px] overflow-y-auto">
+            <table class="w-full text-sm">
+              <thead class="sticky top-0 bg-gray-900">
+                <tr class="border-b border-gray-800 text-gray-400 text-xs uppercase tracking-wider">
+                  <th class="py-2 px-3 text-left font-medium">Ngày</th>
+                  <th class="py-2 px-3 text-right font-medium">NAV</th>
+                  <th class="py-2 px-3 text-right font-medium">Số tiền</th>
+                  <th class="py-2 px-3 text-right font-medium">CCQ mua</th>
+                  <th class="py-2 px-3 text-right font-medium">Tổng CCQ</th>
+                  <th class="py-2 px-3 text-right font-medium">Giá trị</th>
+                  <th class="py-2 px-3 text-right font-medium">Lãi/Lỗ</th>
+                </tr>
+              </thead>
+              <tbody id="txBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <script type="module" src="js/dca.js"></script>
+  </body>
+</html>

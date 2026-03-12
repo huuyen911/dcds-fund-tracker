@@ -1,0 +1,133 @@
+<!doctype html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>So Sánh Quỹ - Phân Tích Chứng Chỉ Quỹ</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns@3.0.0/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
+  </head>
+  <body class="bg-gray-950 text-gray-200 min-h-screen font-sans">
+    <!-- Header -->
+    <header class="bg-gray-900 border-b border-gray-800">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6">
+        <div class="flex items-center justify-between h-14">
+          <a href="index.html" class="flex items-center gap-2.5 group">
+            <div class="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
+              <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M3 3h7v7H3zM14 3h7v7h-7zM3 14h7v7H3zM14 14h7v7h-7z"/>
+              </svg>
+            </div>
+            <span class="text-white font-bold text-lg hidden sm:block group-hover:text-blue-400 transition-colors">FundTracker</span>
+          </a>
+          <nav class="flex items-center gap-1">
+            <a href="index.html" class="px-3 py-1.5 text-sm font-medium rounded-lg text-gray-400 hover:text-white hover:bg-gray-800/50 transition-colors">Danh sách</a>
+            <a href="compare.html" class="px-3 py-1.5 text-sm font-medium rounded-lg bg-gray-800 text-white">So sánh</a>
+            <a href="dca.html" class="px-3 py-1.5 text-sm font-medium rounded-lg text-gray-400 hover:text-white hover:bg-gray-800/50 transition-colors">DCA</a>
+          </nav>
+        </div>
+      </div>
+    </header>
+
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 py-6">
+      <!-- Fund Selector -->
+      <div class="bg-gray-900 border border-gray-800 rounded-xl p-4 mb-6">
+        <h3 class="text-xs text-gray-500 uppercase tracking-wider mb-3">Chọn quỹ để so sánh (tối đa 5)</h3>
+        <div class="relative mb-3">
+          <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+          </svg>
+          <input
+            id="fundSearch"
+            type="text"
+            placeholder="Tìm quỹ theo tên hoặc mã..."
+            class="w-full bg-gray-950 border border-gray-700 rounded-lg py-2.5 pl-10 pr-4 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-blue-500 transition-colors"
+            autocomplete="off"
+          />
+          <div id="searchResults" class="absolute z-10 w-full mt-1 bg-gray-900 border border-gray-700 rounded-lg shadow-xl max-h-60 overflow-y-auto hidden"></div>
+        </div>
+        <div id="selectedFunds" class="flex flex-wrap gap-2"></div>
+      </div>
+
+      <!-- Loading -->
+      <div id="loader" class="hidden flex items-center justify-center py-12">
+        <div class="flex items-center gap-3">
+          <svg class="animate-spin h-5 w-5 text-blue-500" viewBox="0 0 24 24">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" fill="none"/>
+            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
+          </svg>
+          <span class="text-gray-400">Đang tải dữ liệu...</span>
+        </div>
+      </div>
+
+      <!-- Chart -->
+      <div id="chartSection" class="hidden">
+        <div class="bg-gray-900 border border-gray-800 rounded-xl p-4 mb-6">
+          <div class="flex items-center justify-between mb-4">
+            <h3 class="text-xs text-gray-500 uppercase tracking-wider">Biểu đồ NAV (chuẩn hóa %)</h3>
+            <div class="flex gap-2">
+              <button data-range="3m" class="px-3 py-1 text-xs rounded-lg border bg-gray-800 border-gray-700 text-gray-400 hover:bg-gray-700 transition-colors">3T</button>
+              <button data-range="6m" class="px-3 py-1 text-xs rounded-lg border bg-gray-800 border-gray-700 text-gray-400 hover:bg-gray-700 transition-colors">6T</button>
+              <button data-range="1y" class="px-3 py-1 text-xs rounded-lg border bg-blue-600 border-blue-500 text-white transition-colors">1N</button>
+              <button data-range="3y" class="px-3 py-1 text-xs rounded-lg border bg-gray-800 border-gray-700 text-gray-400 hover:bg-gray-700 transition-colors">3N</button>
+              <button data-range="all" class="px-3 py-1 text-xs rounded-lg border bg-gray-800 border-gray-700 text-gray-400 hover:bg-gray-700 transition-colors">Tất cả</button>
+            </div>
+          </div>
+          <div class="relative h-[400px] sm:h-[500px]">
+            <canvas id="compareChart"></canvas>
+          </div>
+        </div>
+
+        <!-- Fund Info Comparison -->
+        <div class="bg-gray-900 border border-gray-800 rounded-xl p-4 mb-6">
+          <h3 class="text-xs text-gray-500 uppercase tracking-wider mb-3">Thông tin cơ bản</h3>
+          <div class="overflow-x-auto">
+            <table class="w-full text-sm">
+              <thead>
+                <tr id="infoHeader" class="border-b border-gray-800 text-gray-400 text-xs uppercase tracking-wider"></tr>
+              </thead>
+              <tbody id="infoBody"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Risk Metrics -->
+        <div class="bg-gray-900 border border-gray-800 rounded-xl p-4 mb-6">
+          <h3 class="text-xs text-gray-500 uppercase tracking-wider mb-3">Chỉ số rủi ro</h3>
+          <div class="overflow-x-auto">
+            <table class="w-full text-sm">
+              <thead>
+                <tr id="riskHeader" class="border-b border-gray-800 text-gray-400 text-xs uppercase tracking-wider"></tr>
+              </thead>
+              <tbody id="riskBody"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Performance Comparison -->
+        <div class="bg-gray-900 border border-gray-800 rounded-xl p-4">
+          <h3 class="text-xs text-gray-500 uppercase tracking-wider mb-3">So sánh hiệu suất</h3>
+          <div class="overflow-x-auto">
+            <table class="w-full text-sm">
+              <thead>
+                <tr id="perfHeader" class="border-b border-gray-800 text-gray-400 text-xs uppercase tracking-wider"></tr>
+              </thead>
+              <tbody id="perfBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- Empty state -->
+      <div id="emptyState" class="text-center py-20">
+        <svg class="w-12 h-12 mx-auto text-gray-600 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+        </svg>
+        <p class="text-gray-500">Chọn ít nhất 2 quỹ để bắt đầu so sánh</p>
+      </div>
+    </main>
+
+    <script type="module" src="js/compare.js"></script>
+  </body>
+</html>

@@ -1,0 +1,194 @@
+<!doctype html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Chi Tiết Quỹ - Phân Tích Chứng Chỉ Quỹ</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns@3.0.0/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
+  </head>
+  <body class="bg-gray-950 text-gray-200 min-h-screen font-sans">
+    <!-- Header -->
+    <header class="bg-gray-900 border-b border-gray-800">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6">
+        <div class="flex items-center justify-between h-14">
+          <div class="flex items-center gap-3">
+            <a href="index.html" class="flex items-center gap-2.5 group">
+              <div class="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
+                <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M3 3h7v7H3zM14 3h7v7h-7zM3 14h7v7H3zM14 14h7v7h-7z"/>
+                </svg>
+              </div>
+              <span class="text-white font-bold text-lg hidden sm:block group-hover:text-blue-400 transition-colors">FundTracker</span>
+            </a>
+            <svg class="w-4 h-4 text-gray-700 hidden sm:block" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+            </svg>
+            <span class="text-sm text-gray-400 hidden sm:block">Chi tiết quỹ</span>
+          </div>
+          <nav class="flex items-center gap-1">
+            <a href="index.html" class="px-3 py-1.5 text-sm font-medium rounded-lg text-gray-400 hover:text-white hover:bg-gray-800/50 transition-colors">Danh sách</a>
+            <a href="compare.html" class="px-3 py-1.5 text-sm font-medium rounded-lg text-gray-400 hover:text-white hover:bg-gray-800/50 transition-colors">So sánh</a>
+            <a href="dca.html" class="px-3 py-1.5 text-sm font-medium rounded-lg text-gray-400 hover:text-white hover:bg-gray-800/50 transition-colors">DCA</a>
+          </nav>
+        </div>
+      </div>
+    </header>
+
+    <!-- Loading -->
+    <div id="loader" class="flex items-center justify-center py-32">
+      <div class="flex items-center gap-3">
+        <svg class="animate-spin h-5 w-5 text-blue-500" viewBox="0 0 24 24">
+          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" fill="none"/>
+          <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
+        </svg>
+        <span class="text-gray-400">Đang tải thông tin quỹ...</span>
+      </div>
+    </div>
+
+    <!-- Content -->
+    <main id="content" class="hidden max-w-7xl mx-auto px-4 sm:px-6 py-6">
+      <!-- Fund Header -->
+      <div class="mb-6">
+        <div class="mb-2">
+          <h1 id="fundName" class="text-2xl sm:text-3xl font-bold text-white"></h1>
+        </div>
+        <p id="fundFullName" class="text-sm text-gray-400 mb-3"></p>
+        <div class="flex items-baseline gap-3">
+          <span id="fundNav" class="text-2xl font-bold text-white"></span>
+          <span id="fundNavChange" class="text-sm font-medium"></span>
+        </div>
+      </div>
+
+      <!-- Info Cards -->
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
+        <div class="bg-gray-900 border border-gray-800 rounded-xl p-4">
+          <div class="text-xs text-gray-500 uppercase tracking-wider mb-1">Quản lý</div>
+          <div id="fundOwner" class="text-sm font-semibold text-white">-</div>
+        </div>
+        <div class="bg-gray-900 border border-gray-800 rounded-xl p-4">
+          <div class="text-xs text-gray-500 uppercase tracking-wider mb-1">Loại quỹ</div>
+          <div id="fundType" class="text-sm font-semibold text-white">-</div>
+        </div>
+        <div class="bg-gray-900 border border-gray-800 rounded-xl p-4">
+          <div class="text-xs text-gray-500 uppercase tracking-wider mb-1">Phí quản lý</div>
+          <div id="fundFee" class="text-sm font-semibold text-white">-</div>
+        </div>
+        <div class="bg-gray-900 border border-gray-800 rounded-xl p-4">
+          <div class="text-xs text-gray-500 uppercase tracking-wider mb-1">Ngày thành lập</div>
+          <div id="fundEstablish" class="text-sm font-semibold text-white">-</div>
+        </div>
+      </div>
+
+      <!-- MA20 Indicators -->
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
+        <div class="bg-gray-900 border border-gray-800 rounded-xl p-4">
+          <div class="text-xs text-gray-500 uppercase tracking-wider mb-1">MA20</div>
+          <div id="ma20Value" class="text-sm font-semibold text-white">-</div>
+          <div class="text-xs text-gray-500 mt-0.5">Trung bình 20 phiên</div>
+        </div>
+        <div class="bg-gray-900 border border-gray-800 rounded-xl p-4">
+          <div class="text-xs text-gray-500 uppercase tracking-wider mb-1">NAV vs MA20</div>
+          <div id="navVsMa" class="text-sm font-semibold">-</div>
+          <div id="navVsMaSub" class="text-xs text-gray-500 mt-0.5">-</div>
+        </div>
+        <div class="bg-gray-900 border border-gray-800 rounded-xl p-4">
+          <div class="text-xs text-gray-500 uppercase tracking-wider mb-1">Ratio (NAV/MA20)</div>
+          <div id="ratioValue" class="text-sm font-semibold">-</div>
+          <div id="ratioSub" class="text-xs text-gray-500 mt-0.5">-</div>
+        </div>
+        <div class="bg-gray-900 border border-gray-800 rounded-xl p-4">
+          <div class="text-xs text-gray-500 uppercase tracking-wider mb-1">Hệ số nhân</div>
+          <div id="multiplierValue" class="text-sm font-semibold text-yellow-400">-</div>
+          <div class="text-xs text-gray-500 mt-0.5">0.5x - 2.0x</div>
+        </div>
+      </div>
+
+      <!-- Value Averaging -->
+      <div class="bg-gray-900 border border-gray-800 rounded-xl p-4 mb-6">
+        <h3 class="text-xs text-gray-500 uppercase tracking-wider mb-3">Tính toán Value Averaging</h3>
+        <div class="flex flex-col sm:flex-row items-start sm:items-center gap-4">
+          <div class="flex items-center gap-2">
+            <label class="text-sm text-gray-400">Số tiền định kỳ:</label>
+            <div class="flex items-center bg-gray-950 border border-gray-700 rounded-lg px-3 py-1.5">
+              <input id="investInput" type="number" value="1000000" step="500000" min="0"
+                class="bg-transparent border-none text-white text-sm font-semibold w-28 text-right focus:outline-none" />
+              <span class="text-xs text-gray-500 ml-2">VND</span>
+            </div>
+          </div>
+          <svg class="w-5 h-5 text-gray-600 hidden sm:block" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"/>
+          </svg>
+          <div class="flex items-center gap-2">
+            <label class="text-sm text-gray-400">Hệ số:</label>
+            <span id="multDisplay" class="text-sm font-semibold text-yellow-400">-</span>
+          </div>
+          <svg class="w-5 h-5 text-gray-600 hidden sm:block" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"/>
+          </svg>
+          <div class="flex items-center gap-2">
+            <label class="text-sm text-gray-400">Nên mua:</label>
+            <div id="buyAmount" class="text-lg font-bold px-3 py-1 rounded-lg">-</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Description -->
+      <div class="bg-gray-900 border border-gray-800 rounded-xl p-4 mb-6">
+        <h3 class="text-xs text-gray-500 uppercase tracking-wider mb-2">Mô tả quỹ</h3>
+        <p id="fundDescription" class="text-sm text-gray-300 leading-relaxed">-</p>
+      </div>
+
+      <!-- Chart -->
+      <div class="bg-gray-900 border border-gray-800 rounded-xl p-4 mb-6">
+        <div class="flex flex-wrap gap-2 mb-4">
+          <button data-range="1m" class="px-3 py-1 text-xs rounded-lg border bg-gray-800 border-gray-700 text-gray-400 hover:bg-gray-700 transition-colors">1T</button>
+          <button data-range="3m" class="px-3 py-1 text-xs rounded-lg border bg-gray-800 border-gray-700 text-gray-400 hover:bg-gray-700 transition-colors">3T</button>
+          <button data-range="6m" class="px-3 py-1 text-xs rounded-lg border bg-gray-800 border-gray-700 text-gray-400 hover:bg-gray-700 transition-colors">6T</button>
+          <button data-range="1y" class="px-3 py-1 text-xs rounded-lg border bg-blue-600 border-blue-500 text-white transition-colors">1N</button>
+          <button data-range="3y" class="px-3 py-1 text-xs rounded-lg border bg-gray-800 border-gray-700 text-gray-400 hover:bg-gray-700 transition-colors">3N</button>
+          <button data-range="5y" class="px-3 py-1 text-xs rounded-lg border bg-gray-800 border-gray-700 text-gray-400 hover:bg-gray-700 transition-colors">5N</button>
+          <button data-range="all" class="px-3 py-1 text-xs rounded-lg border bg-gray-800 border-gray-700 text-gray-400 hover:bg-gray-700 transition-colors">Tất cả</button>
+        </div>
+        <div class="relative h-[350px] sm:h-[450px]">
+          <canvas id="navChart"></canvas>
+        </div>
+      </div>
+
+      <!-- Performance + Asset Allocation -->
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+        <!-- Performance Table -->
+        <div class="bg-gray-900 border border-gray-800 rounded-xl p-4">
+          <h3 class="text-xs text-gray-500 uppercase tracking-wider mb-3">Hiệu suất</h3>
+          <table class="w-full text-sm">
+            <tbody id="perfBody"></tbody>
+          </table>
+        </div>
+
+        <!-- Asset Allocation -->
+        <div class="bg-gray-900 border border-gray-800 rounded-xl p-4">
+          <h3 class="text-xs text-gray-500 uppercase tracking-wider mb-3">Phân bổ tài sản</h3>
+          <div id="assetAllocation"></div>
+        </div>
+      </div>
+
+      <!-- Holdings -->
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <!-- Top Holdings -->
+        <div class="bg-gray-900 border border-gray-800 rounded-xl p-4">
+          <h3 class="text-xs text-gray-500 uppercase tracking-wider mb-3">Top cổ phiếu nắm giữ</h3>
+          <div id="topHoldings"></div>
+        </div>
+
+        <!-- Industry Holdings -->
+        <div class="bg-gray-900 border border-gray-800 rounded-xl p-4">
+          <h3 class="text-xs text-gray-500 uppercase tracking-wider mb-3">Phân bổ ngành</h3>
+          <div id="industryHoldings"></div>
+        </div>
+      </div>
+    </main>
+
+    <script type="module" src="js/detail.js"></script>
+  </body>
+</html>
